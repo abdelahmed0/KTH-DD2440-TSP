@@ -2,17 +2,23 @@ import sys
 import os
 import random
 
-SCALE = 100
+SCALE = 10**6
 
 if len(sys.argv) <= 1:
-    print(f"Usage: python3 {sys.argv[0]} DIRECTORY NUM_OF_CASES [MAX_N=50]")
+    print(f"Usage: python3 {sys.argv[0]} DIRECTORY NUM_OF_CASES [MAX_N=50] [SEED]")
     exit()
 
 dir = sys.argv[1]
 cases = int(sys.argv[2])
 max_n = 50
+seed = 1243
 if len(sys.argv) >= 4:
     max_n = int(sys.argv[3])
+
+if len(sys.argv) >= 5:
+    seed = int(sys.argv[4])
+
+random.seed(seed)
 
 if not os.path.exists(dir):
     os.makedirs(dir)

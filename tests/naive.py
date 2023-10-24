@@ -1,5 +1,6 @@
 import sys
-from math import sqrt
+from util import distance
+
 n = int(sys.stdin.readline())
 points = []
 
@@ -7,13 +8,6 @@ for i in range(n):
     line = sys.stdin.readline()
     args = line.split(' ')
     points.append((float(args[0]), float(args[1])))
-
-def distance(a, b):
-    ax, ay = a
-    bx, by = b
-    dx = ax - bx
-    dy = ay - by
-    return round(sqrt(dx * dx + dy * dy))
 
 tour = [-1 for i in range(n)]
 used = [False for i in range(n)]

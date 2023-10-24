@@ -2,7 +2,8 @@ import subprocess
 from subprocess import Popen, PIPE, STDOUT
 import sys
 import os
-from math import sqrt
+import util
+from util import distance
 
 PYTHON = "python3"
 SHELL = "bash"
@@ -18,13 +19,6 @@ test_dir = sys.argv[2]
 ignore_naive = False
 if len(sys.argv) >= 4:
     ignore_naive = int(sys.argv[3]) != 0
-
-def distance(a, b):
-    ax, ay = a
-    bx, by = b
-    dx = ax - bx
-    dy = ay - by
-    return round(sqrt(dx * dx + dy * dy))
 
 def compute_length(points, tour):
     length = 0
@@ -47,6 +41,9 @@ def length_from_out(points, outs):
     return compute_length(points, tour)
 
 tests = os.listdir(test_dir)
+lengths = []
+naive_length = []
+percentage = []
 for test in tests:
     test_path = os.path.join(test_dir, test)
     case = open(test_path, 'r').read()
@@ -57,14 +54,29 @@ for test in tests:
         args = case_split[i].split(' ')
         points.append((float(args[0]), float(args[1])))
 
-    p = Popen([executable], stdout=PIPE, stdin=PIPE, stderr=subprocess.STDOUT)
+    p = Popen([executable], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
     outs, errs = p.communicate(input=case.encode(), timeout=2)
 
-    print(f'{test}: {length_from_out(points, outs)}', end='')
+    l = length_from_out(points, outs)
+    lengths.append(l)
+    print(f'{test}: {l}', end='')
     
     if not ignore_naive:
-        naive = Popen([PYTHON, NAIVE_PATH], stdout=PIPE, stdin=PIPE, stderr=subprocess.STDOUT)
+        naive = Popen([PYTHON, NAIVE_PATH], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
         outs, errs = naive.communicate(input=case.encode(), timeout=2)
-        print(f' ({length_from_out(points, outs)})', end='')
+        l2 = length_from_out(points, outs)
+        naive_length.append(l2)
+        p = (l / l2) * 100
+        percentage.append(p)
+        print(f' ({p} % of naive)', end='')
     
     print('')
+
+print('Stats:')
+print(f'\tMinimum: {util.find_min(lengths)}', end='')
+if not ignore_naive: print(f', {util.find_min(percentage)} %', end='')
+print(f'\n\tMaximum: {util.find_max(lengths)}', end='')
+if not ignore_naive: print(f', {util.find_max(percentage)} %', end='')
+print(f'\n\tAverage: {util.mean(lengths)}', end='')
+if not ignore_naive: print(f', {util.mean(percentage)} %', end='')
+print('')
