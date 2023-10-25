@@ -1,3 +1,4 @@
+#ifdef IGNORE_FILE
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -81,3 +82,4 @@ void greedy_tour() {
         std::cout << tour[i] << std::endl;
     }
 }
+#endif // IGNORE_FILE
