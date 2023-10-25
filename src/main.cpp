@@ -1,25 +1,11 @@
 #include <iostream>
-#include <vector>
-#include <cmath>
+#include "util.h"
+#include "linkernighan.h"
 
 #define MAX_N 1000
 
-typedef double num_t;
-
-typedef struct {
-    num_t x;
-    num_t y;
-} vec_t;
-
-
 int n;
 vec_t points[MAX_N] = {0};
-
-num_t distance(vec_t& a, vec_t& b) {
-    num_t x = a.x - b.x;
-    num_t y = a.y - b.y;
-    return std::round(std::sqrt(x * x + y * y));
-}
 
 void greedy_tour();
 
