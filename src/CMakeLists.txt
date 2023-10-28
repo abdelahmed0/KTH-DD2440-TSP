@@ -6,9 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -std=gnu++17 -static -lrt -Wl,--whol
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
 add_executable(tsp main.cpp
-        linkernighan.cpp
         util.cpp
         util.h
-        linkernighan.h
-        graph.cpp
-        graph.h)
+        lin_kernighan.cpp
+        lin_kernighan.h)

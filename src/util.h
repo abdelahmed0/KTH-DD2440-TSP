@@ -1,25 +1,64 @@
 #ifndef TSP_UTIL_H
 #define TSP_UTIL_H
 
-// number of neighbours stored for each city (for optimization)
+#include <cstdint>
+#include <vector>
+#include <array>
+
 #define NEAREST 20
 
-typedef double num_t; // in case we want to change to float's later for (possibly) faster runtime
+typedef double num_t;
+typedef uint32_t length_t;
+typedef std::pair<int, int> edge_t;
 
-// data structure to store 2d coordinates
-typedef struct {
-    num_t x;
-    num_t y;
-} vec_t;
+edge_t edge(int from, int to);
 
-typedef struct city_t {
-    vec_t pos{};
-    city_t* nearest[NEAREST] = {nullptr};
-} city_t;
+bool set_contains(const std::set<edge_t>& set, edge_t edge);
 
-num_t distance(vec_t& a, vec_t& b);
-// finds the NEAREST number of neighbours and updates city->nearest with them
-void compute_neighbours(int n, city_t world[], city_t& city);
+
+class Matrix {
+public:
+    explicit Matrix(int n);
+    int dim() const;
+    length_t& at(int i, int j);
+
+private:
+    int n;
+    std::vector<length_t> entries;
+};
+
+class Neighbours {
+public:
+    explicit Neighbours(int n);
+    void find_neighbours(int idx, Matrix &distances);
+    std::vector<int>& at(int idx);
+
+private:
+    std::vector<std::vector<int>> entries;
+};
+
+
+class Tour {
+public:
+    explicit Tour(int n);
+    length_t length(Matrix& distances);
+    bool is_valid();
+
+    int& operator[](int i);
+    // returns the index of the node
+    int index_of(int node);
+    // returns predecessor node of i
+    int predecessor(int i);
+    // returns the successor node of i
+    int successor(int i);
+    // returns both the predecessor and successor node of i
+    std::array<int, 2> adjacent(int i);
+
+    Tour update(std::set<edge_t>& added, std::set<edge_t>& removed);
+
+private:
+    int n;
+    std::vector<int> tour;
+};
 
 #endif //TSP_UTIL_H
-
