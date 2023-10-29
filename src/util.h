@@ -53,8 +53,8 @@ public:
     int successor(int i);
     // returns both the predecessor and successor node of i
     std::array<int, 2> adjacent(int i);
-
-    Tour update(std::set<edge_t>& added, std::set<edge_t>& removed);
+    // returns true iff there is an (undirected) edge between t1 and t2
+    bool are_connected(int t1, int t2);
 
 private:
     int n;

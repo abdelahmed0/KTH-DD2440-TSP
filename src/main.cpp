@@ -7,7 +7,7 @@
 #include "util.h"
 #include "lin_kernighan.h"
 
-#define RUNTIME 1900
+#define RUNTIME 1500
 
 static inline std::chrono::time_point<std::chrono::high_resolution_clock> now() {
     return std::chrono::high_resolution_clock::now();

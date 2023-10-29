@@ -72,7 +72,7 @@ bool Tour::is_valid() {
 }
 
 int Tour::predecessor(int i) {
-    return tour[(i - 1) % n];
+    return tour[(i + (n - 1)) % n];
 }
 
 int Tour::successor(int i) {
@@ -83,51 +83,6 @@ std::array<int, 2> Tour::adjacent(int i) {
     return {predecessor(i), successor(i)};
 }
 
-Tour Tour::update(std::set<edge_t>& added, std::set<edge_t>& removed) {
-    std::set<edge_t> edges;
-    for (int i = 0; i < n; ++i) {
-        edge_t e = edge(tour[i], tour[(i + 1) % n]);
-        if (!set_contains(removed, e)) {
-            edges.insert(e);
-        }
-    }
-    for (auto e : added) {
-        edges.insert(e);
-    }
-
-    assert(edges.size() == n);
-
-    Tour t2(n);
-    int pointer = 0;
-    while (!edges.empty()) {
-        edge_t e = *edges.begin();
-    }
-
-    int idx = 0;
-    t2[0] = idx;
-
-    // TODO check if works
-
-    for (int i = 1; i < n; ++i) {
-        edge_t found_edge(-1, -1);
-        for (auto& e : edges) {
-            if (e.first == idx) {
-                idx = e.second;
-                found_edge = e;
-            } else if (e.second == idx) {
-                idx = e.first;
-                found_edge = e;
-            }
-        }
-        t2[i] = idx;
-        if (found_edge != std::pair(-1, -1)) {
-            edges.erase(found_edge);
-        }
-    }
-
-    return t2;
-}
-
 int Tour::index_of(int node) {
     auto it = std::find(tour.begin(), tour.end(), node);
     if (it == tour.end()) {
@@ -135,6 +90,11 @@ int Tour::index_of(int node) {
         return -1;
     }
     return (int) (it - tour.begin());
+}
+
+bool Tour::are_connected(int t1, int t2) {
+    int idx1 = index_of(t1);
+    return t2 == predecessor(idx1) || successor(idx1) == t2;
 }
 
 

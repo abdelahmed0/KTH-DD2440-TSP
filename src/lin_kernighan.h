@@ -6,12 +6,13 @@
 class LK {
 public:
     explicit LK(Tour &tour, Matrix &distances, Neighbours &neighbours);
-    bool step();
     Tour& get_tour();
+    bool step();
 
 private:
-    bool chooseX(int t1, int t2, length_t& gain, std::set<edge_t>& removed_edges, std::set<edge_t>& added_edges);
-    bool chooseY(int t1, int t2, length_t& gain, std::set<edge_t>& removed_edges, std::set<edge_t>& added_edges);
+    bool generate_new_tour(Tour& t2, std::set<edge_t>& added, std::set<edge_t>& removed);
+    bool recurse(Tour& T, std::set<edge_t> Xi, std::set<edge_t> Yi, int t1, int last, length_t Gi);
+
 
 protected:
     Tour& tour;
