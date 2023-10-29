@@ -8,6 +8,7 @@
 #include "lin_kernighan.h"
 
 #define RUNTIME 1500
+#define NEAREST 5
 
 static inline std::chrono::time_point<std::chrono::high_resolution_clock> now() {
     return std::chrono::high_resolution_clock::now();
@@ -61,8 +62,13 @@ int main() {
         }
     }
 
+    bool identical = true;
     for (int i = 0; i < n; ++i) {
+        identical = identical && lk.get_tour()[i] == tour[i];
         std::cout << lk.get_tour()[i] << std::endl;
+    }
+    if (identical) {
+        std::cerr << "Final tour is naive!" << std::endl;
     }
 
     return 0;

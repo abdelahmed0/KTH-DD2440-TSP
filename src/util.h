@@ -5,7 +5,7 @@
 #include <vector>
 #include <array>
 
-#define NEAREST 20
+#define NEAREST 5
 
 typedef double num_t;
 typedef uint32_t length_t;
