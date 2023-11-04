@@ -21,10 +21,9 @@ static bool is_time_over(std::chrono::high_resolution_clock::time_point start_ti
 void greedy_tour(Matrix& distances, Tour& tour);
 
 int main() {
-    auto start = now();
-
     int n;
     std::cin >> n;
+    auto start = now();
 
     std::vector<std::pair<num_t, num_t>> points;
     for (int i = 0; i < n; ++i) {
@@ -53,21 +52,25 @@ int main() {
     }
 
     Tour tour(n);
-    greedy_tour(distances, tour);
+    // greedy_tour(distances, tour);
 
+    length_t prev = tour.length(distances);
     LK lk(tour, distances, neighbours);
     while (!is_time_over(start, RUNTIME)) {
-        if (!lk.step()) {
+        if (!lk.naive()) {
             break;
         }
     }
 
+    if (is_time_over(start, RUNTIME)) {
+        std::cerr << "TIMEOUT" << std::endl;
+    }
+
     bool identical = true;
     for (int i = 0; i < n; ++i) {
-        identical = identical && lk.get_tour()[i] == tour[i];
         std::cout << lk.get_tour()[i] << std::endl;
     }
-    if (identical) {
+    if (prev != lk.get_tour().length(distances)) {
         std::cerr << "Final tour is naive!" << std::endl;
     }
 

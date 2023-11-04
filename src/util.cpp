@@ -58,7 +58,7 @@ length_t Tour::length(Matrix& distances) {
     length_t len = 0;
     for (int i = 0; i < distances.dim(); ++i) {
         int j = (i + 1) % distances.dim();
-        len += distances.at(i, j);
+        len += distances.at(tour[i], tour[j]);
     }
     return len;
 }

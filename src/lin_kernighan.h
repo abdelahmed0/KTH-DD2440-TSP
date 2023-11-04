@@ -5,24 +5,24 @@
 
 class LK {
 public:
-    explicit LK(Tour &tour, Matrix &distances, Neighbours &neighbours);
+    explicit LK(Tour& base, Matrix &distances, Neighbours &neighbours);
     Tour& get_tour();
-    bool step();
     bool naive();
 
+
 private:
-    bool generate_new_tour(Tour& t2, std::set<edge_t>& added, std::set<edge_t>& removed);
-    bool recurse(Tour& T, std::set<edge_t> Xi, std::set<edge_t> Yi, int t1, int last, length_t Gi);
-    int choose_yi(int last, int& start);
+    bool new_tour(std::vector<edge_t>& X, std::vector<edge_t>& Y, edge_t final, int i);
 
 protected:
-    Tour& tour;
     Matrix& distances;
     Neighbours& neighbours;
 
 private:
+    Tour tour1, tour2;
     int iteration = 0;
-    Tour out;
+
+    std::set<edge_t> edges;
+    std::set<int> visited;
 };
 
 #endif //TSP_LIN_KERNIGHAN_H
