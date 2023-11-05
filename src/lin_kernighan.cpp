@@ -138,7 +138,7 @@ bool LK::naive() {
 
         bool valid = new_tour(X, Y, edge(t1, even), 2);
         if (valid && T.length(distances) < tour.length(distances)) {
-            std::cerr << T.length(distances) << " < " << tour.length(distances) << std::endl;
+            // std::cerr << T.length(distances) << " < " << tour.length(distances) << std::endl;
             iteration = (iteration + 1) % 2;
             return true;
         }
@@ -169,7 +169,7 @@ bool LK::naive() {
             }
 
             if (T.length(distances) < tour.length(distances)) {
-                std::cerr << T.length(distances) << " 2< " << tour.length(distances) << std::endl;
+                // std::cerr << T.length(distances) << " 2< " << tour.length(distances) << std::endl;
                 iteration = (iteration + 1) % 2;
                 return true;
             }
@@ -263,9 +263,9 @@ bool LK::naive() {
         goto Step2;
     }
 
-    std::cerr << "okay" << std::endl;
+    /*std::cerr << "okay" << std::endl;
     std::cerr << T.length(distances) << " " << T.is_valid() << std::endl;
-    std::cerr << tour.length(distances) << std::endl;
+    std::cerr << tour.length(distances) << std::endl;*/
     return false;
 }
 
@@ -277,9 +277,6 @@ bool LK::new_tour(std::vector<edge_t> &X, std::vector<edge_t> &Y, edge_t final, 
 
     // used for validating the tour
     visited.clear();
-    for (int j = 0; j < n; ++j) {
-        visited.insert(j);
-    }
 
     // keeps track of all edges in new tour
     // edges = (tour-edges UNION added) SETDIFF removed
@@ -315,7 +312,7 @@ bool LK::new_tour(std::vector<edge_t> &X, std::vector<edge_t> &Y, edge_t final, 
     T[0] = idx;
 
     for (int j = 1; j < n; ++j) {
-        edge_t found_edge(-1, -1);
+        edge_t found_edge{-1, -1};
         bool not_found = true;
         // search for some edge that has idx as an endpoint and choose it
         for (auto& e : edges) {
@@ -342,8 +339,8 @@ bool LK::new_tour(std::vector<edge_t> &X, std::vector<edge_t> &Y, edge_t final, 
     }
 
     for (int j = 0; j < n; ++j) {
-        visited.erase(T[j]);
+        visited.insert(T[j]);
     }
 
-    return visited.empty();
+    return visited.size() == n;
 }

@@ -5,7 +5,7 @@
 
 class LK {
 public:
-    explicit LK(Tour& base, Matrix &distances, Neighbours &neighbours);
+    LK(Tour& base, Matrix &distances, Neighbours &neighbours);
     Tour& get_tour();
     bool naive();
 

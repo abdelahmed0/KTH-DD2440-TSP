@@ -5,11 +5,18 @@
 #include <vector>
 #include <array>
 
-#define NEAREST 5
+#define NEAREST 20
 
 typedef double num_t;
 typedef uint32_t length_t;
-typedef std::pair<int, int> edge_t;
+
+typedef struct {
+    int first;
+    int second;
+} edge_t;
+
+bool operator<(const edge_t& lhs, const edge_t& rhs);
+bool operator==(const edge_t& lhs, const edge_t& rhs);
 
 edge_t edge(int from, int to);
 

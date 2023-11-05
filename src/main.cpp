@@ -8,7 +8,6 @@
 #include "lin_kernighan.h"
 
 #define RUNTIME 1500
-#define NEAREST 5
 
 static inline std::chrono::time_point<std::chrono::high_resolution_clock> now() {
     return std::chrono::high_resolution_clock::now();
@@ -21,13 +20,13 @@ static bool is_time_over(std::chrono::high_resolution_clock::time_point start_ti
 void greedy_tour(Matrix& distances, Tour& tour);
 
 int main() {
-    int n;
+    int n = 0;
     std::cin >> n;
     auto start = now();
 
     std::vector<std::pair<num_t, num_t>> points;
     for (int i = 0; i < n; ++i) {
-        num_t x, y;
+        num_t x = 0.0, y = 0.0;
         std::cin >> x >> y;
         points.emplace_back(x, y);
     }
@@ -52,7 +51,7 @@ int main() {
     }
 
     Tour tour(n);
-    // greedy_tour(distances, tour);
+    greedy_tour(distances, tour);
 
     length_t prev = tour.length(distances);
     LK lk(tour, distances, neighbours);
@@ -60,17 +59,14 @@ int main() {
         if (!lk.naive()) {
             break;
         }
-    }
-
-    if (is_time_over(start, RUNTIME)) {
-        std::cerr << "TIMEOUT" << std::endl;
+        std::cerr << "next" << std::endl;
     }
 
     bool identical = true;
     for (int i = 0; i < n; ++i) {
         std::cout << lk.get_tour()[i] << std::endl;
     }
-    if (prev != lk.get_tour().length(distances)) {
+    if (prev == lk.get_tour().length(distances)) {
         std::cerr << "Final tour is naive!" << std::endl;
     }
 

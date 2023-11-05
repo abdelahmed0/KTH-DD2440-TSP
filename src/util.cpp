@@ -4,6 +4,14 @@
 #include <cassert>
 #include "util.h"
 
+bool operator<(const edge_t& lhs, const edge_t& rhs) {
+    return lhs.first < rhs.first || (lhs.first == rhs.first && lhs.second < rhs.second);
+}
+
+bool operator==(const edge_t& lhs, const edge_t& rhs) {
+    return lhs.first == rhs.first && lhs.second == rhs.second;
+}
+
 Matrix::Matrix(int n) : n(n), entries(n * n) {}
 
 int Matrix::dim() const {
