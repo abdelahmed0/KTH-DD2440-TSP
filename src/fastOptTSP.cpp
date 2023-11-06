@@ -11,12 +11,9 @@ using namespace std;
 
 #define TESTING 0
 
-static inline chrono::time_point<chrono::high_resolution_clock> now() {
-    return chrono::high_resolution_clock::now();
-}
-
-static bool timeOver(chrono::high_resolution_clock::time_point start_time, uint16_t ms_to_run) {
-    return chrono::duration_cast<chrono::milliseconds>(now() - start_time).count() >= ms_to_run;
+static bool timeOver(chrono::steady_clock::time_point start_time, uint16_t ms_to_run) {
+    return chrono::duration_cast<chrono::milliseconds>
+    (chrono::steady_clock::now() - start_time).count() >= ms_to_run;
 }
 
 class Matrix {
@@ -130,54 +127,56 @@ inline vector<uint32_t> greedy(Matrix& m) {
 }
 
 /**
- * Performs 2-opt local optimization on a tour
- * Implementation of fast-2-opt explained in paper 
+ * Performs fast the 2-opt local optimization algorithm from the paper
  * "Large-Step Markov Chains for the Traveling Salesman Problem"
  * Time complexity: O(n)
- * 
- * @return True if an improvement is made, false otherwise. FIXME: always true for some reason
  */
-inline bool fastTwoOpt(Matrix& d, Matrix& nbhd, 
+inline void fastTwoOpt(Matrix& d, Matrix& nbhd, 
                        vector<uint32_t>& tour, vector<uint32_t> whichSlot, 
-                       uint32_t minLink, uint32_t& maxLink) {
+                       uint32_t minLink, uint32_t& maxLink,
+                       chrono::steady_clock::time_point startTime, uint16_t timeLimit) {
     size_t N = d.rows();
-    bool improved = false;
+    bool improved = true;
 
-    // We want to consider swaps of edges (n1, n2) and (m1, m2) which are currently in tour
-    // for each (n1, n2)
-    for (size_t n1_i = 0; n1_i < N; ++n1_i) {
-        size_t n2_i = (n1_i + 1) % N;
-        uint32_t n1 = tour[n1_i];
-        uint32_t n2 = tour[n2_i];
-        
-        // for each (m1, m2) where m1 is choosen as the k-closest neighbor of n1
-        for (size_t k = 0; k < nbhd.cols(); ++k) {
-            uint32_t m1_i = whichSlot[nbhd.at(n1, k)];
-            size_t m2_i = (m1_i + 1) % N;
+    while (improved) {
+        if (timeOver(startTime, timeLimit)) break;
+
+        improved = false;
+        // We want to consider swaps of edges (m1, n1) and (m2, n2) which are currently in tour
+        // for each (m1, n1)
+        for (size_t m1_i = 0; m1_i < N; ++m1_i) {
+            size_t n1_i = (m1_i + 1) % N;
             uint32_t m1 = tour[m1_i];
-            uint32_t m2 = tour[m2_i];
+            uint32_t n1 = tour[n1_i];
+            
+            // for each (m2, n2) where m2 is choosen as the k-closest neighbor of m1
+            for (size_t k = 0; k < nbhd.cols(); ++k) {
+                uint32_t m2_i = whichSlot[nbhd.at(m1, k)];
+                size_t n2_i = (m2_i + 1) % N;
+                uint32_t m2 = tour[m2_i];
+                uint32_t n2 = tour[n2_i];
 
-            // if lower bound on new length is greater than upper bound of old length
-            if (d.at(n1, m1) + minLink > d.at(n1, n2) + maxLink) {
-                break; // go to next n1
-            }
-            if (d.at(n1, m1) + d.at(n2, m2) < d.at(n1, n2) + d.at(m1, m2)) {
-                // make swap
-                improved = true;
-                reverseTourSegment(tour, whichSlot, n2_i % N, m1_i);
-                maxLink = max(maxLink, max(d.at(n1, m1), d.at(n2, m2)));
-                break; // go to next n1
+                // if lower bound on new length is greater than upper bound of old length
+                if (d.at(m1, m2) + minLink > d.at(m1, n1) + maxLink) {
+                    break; // go to next m1
+                }
+                if (d.at(m1, m2) + d.at(n1, n2) < d.at(m1, n1) + d.at(m2, n2)) {
+                    // make swap
+                    improved = true;
+                    reverseTourSegment(tour, whichSlot, n1_i, m2_i);
+                    maxLink = max(maxLink, max(d.at(m1, m2), d.at(n1, n2)));
+                    break; // go to next m1
+                }
             }
         }
     }
-    return improved;
 }
 
 
 int main(int argc, char *argv[]) {
-    auto startTime = now();
+    chrono::steady_clock::time_point startTime = chrono::steady_clock::now();
     const uint16_t timeLimit = 1900;
-    const uint16_t twoOptTime = 200;
+    const uint16_t twoOptTimeLimit = 200;
     const size_t K_NEAREST = 30;
 
     #if TESTING
@@ -202,21 +201,7 @@ int main(int argc, char *argv[]) {
     const uint32_t minLink = distanceMatrix.min();
     uint32_t maxLink = *max_element(begin(tour), end(tour));
 
-    bool twoOptMinima = false;
-    while (!timeOver(startTime, twoOptTime)) {
-        if (!fastTwoOpt(distanceMatrix, nbhd, tour, whichSlot, minLink, maxLink)) {
-            // twoOptMinima = true; // uncomment to activate 3-opt after 2-opt
-            break;
-        }
-    }
-
-    // if (twoOptMinima) { //TODO: threeOpt implementation
-    //     while (true) {
-    //         if (!threeOptTimedTSP(distanceMatrix, tour, startTime, timeLimit)) {
-    //             break;
-    //         }
-    //     }
-    // }
+    fastTwoOpt(distanceMatrix, nbhd, tour, whichSlot, minLink, maxLink, startTime, twoOptTimeLimit);
 
     for (int i = 0; i < tour.size(); ++i) {
         cout << tour[i] << endl;
