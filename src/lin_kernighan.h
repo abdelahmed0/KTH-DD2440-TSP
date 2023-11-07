@@ -1,6 +1,7 @@
 #ifndef TSP_LIN_KERNIGHAN_H
 #define TSP_LIN_KERNIGHAN_H
 
+#include <set>
 #include "util.h"
 
 class LK {
@@ -23,6 +24,11 @@ private:
 
     std::set<edge_t> edges;
     std::set<int> visited;
+
+    std::vector<edge_t> X;
+    std::vector<edge_t> Y;
+    std::vector<length_t> Gi;
+    std::vector<int> nodes;
 };
 
 #endif //TSP_LIN_KERNIGHAN_H

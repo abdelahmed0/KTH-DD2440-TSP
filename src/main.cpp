@@ -7,7 +7,7 @@
 #include "util.h"
 #include "lin_kernighan.h"
 
-#define RUNTIME 1500
+#define RUNTIME 2500
 
 static inline std::chrono::time_point<std::chrono::high_resolution_clock> now() {
     return std::chrono::high_resolution_clock::now();
@@ -50,6 +50,7 @@ int main() {
         neighbours.find_neighbours(i, distances);
     }
 
+
     Tour tour(n);
     greedy_tour(distances, tour);
 
@@ -59,7 +60,6 @@ int main() {
         if (!lk.naive()) {
             break;
         }
-        std::cerr << "next" << std::endl;
     }
 
     bool identical = true;

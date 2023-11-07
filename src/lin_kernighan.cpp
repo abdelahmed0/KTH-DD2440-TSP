@@ -1,11 +1,12 @@
-#include <set>
 #include <cassert>
 #include <iostream>
 #include <list>
 #include "lin_kernighan.h"
 
 LK::LK(Tour& base, Matrix &distances, Neighbours &neighbours)
-        : distances(distances), neighbours(neighbours), tour1(distances.dim()), tour2(distances.dim()), edges(), visited() {
+        : distances(distances), neighbours(neighbours), tour1(distances.dim()),
+        tour2(distances.dim()), edges(), visited(),
+        X(distances.dim()), Y(distances.dim()), nodes(2 * distances.dim()), Gi(distances.dim()) {
     for (int i = 0; i < distances.dim(); ++i) {
         tour1[i] = base[i];
         tour2[i] = base[i];
@@ -20,14 +21,7 @@ Tour &LK::get_tour() {
 }
 
 bool LK::naive() {
-
     int n = distances.dim();
-
-    std::vector<edge_t> X(n);
-    std::vector<edge_t> Y(n);
-    std::vector<length_t> Gi(n);
-    std::vector<int> nodes(n);
-
     for (int i = 0; i < n; ++i) {
         X[i] = edge(0, 0);
         Y[i] = edge(-1, -1);
@@ -143,7 +137,7 @@ bool LK::naive() {
             return true;
         }
         nodes[3] = even;
-    } else {
+    } else if (i < n) {
         // TODO choose first suitable xi that forms a tour
         bool found = false;
         int last = nodes[2 * i - 2];
@@ -198,7 +192,7 @@ bool LK::naive() {
 
         nodes[4] = odd;
         goto Step5;
-    } else {
+    } else if (i < n) {
         int last = nodes[2 * i - 1];
         for (auto odd : neighbours.at(last)) {
             auto yi = edge(last, odd);
@@ -233,20 +227,24 @@ bool LK::naive() {
     }
 
     Step8:
+    //std::cerr << "fall" << std::endl;
     if (!potential_y2.empty()) {
         i = 2;
+        //std::cerr << "goto step 7" << std::endl;
         goto Step7;
     }
 
     Step9:
     if (!potential_x2.empty()) {
         i = 2;
+        //std::cerr << "goto step 6" << std::endl;
         goto Step6;
     }
 
     Step10:
     if (!potential_t3.empty()) {
         i = 1;
+        //std::cerr << "goto step 4" << std::endl;
         goto Step4;
     }
 
@@ -254,12 +252,14 @@ bool LK::naive() {
     x1_idx++;
     if (x1_idx < 2) {
         i = 1;
+        //std::cerr << "goto step 3" << std::endl;
         goto Step3;
     }
     
     Step12:
     t1_idx++;
     if (t1_idx < n) {
+        //std::cerr << "goto step 2" << std::endl;
         goto Step2;
     }
 
@@ -276,16 +276,29 @@ bool LK::new_tour(std::vector<edge_t> &X, std::vector<edge_t> &Y, edge_t final, 
     Tour& T = iteration == 0 ? tour2 : tour1;
 
     // used for validating the tour
+   /* std::cerr << &visited << std::endl;
+    std::cerr << visited.size() << std::endl;
+    for (auto& x : visited) {
+        std::cerr << &x << " ";
+    }
+    std::cerr << std::endl;
+
+    for (auto x : visited) {
+        std::cerr << x << " ";
+    }
+    std::cerr << std::endl;
+
+    std::cerr << *((int*)0x5ec340) << std::endl;*/
     visited.clear();
 
     // keeps track of all edges in new tour
     // edges = (tour-edges UNION added) SETDIFF removed
     edges.clear();
     edges.insert(final);
-    for (int j = 0; j < n; ++j) {
+    for (int j = 0; j < n; j++) {
         edge_t e = edge(tour[j], tour[(j + 1) % n]);
         bool remove = false;
-        for (int k = 0; k < i; ++k) {
+        for (int k = 0; k < i; k++) {
             if (X[k] == e) {
                 remove = true;
                 break;
@@ -298,6 +311,7 @@ bool LK::new_tour(std::vector<edge_t> &X, std::vector<edge_t> &Y, edge_t final, 
     for (int j = 0; j < i - 1; ++j) {
         if (Y[j] == edge(-1, -1) || Y[j].first == Y[j].second) {
             std::cerr << "ERR" << std::endl;
+            throw;
         }
         edges.insert(Y[j]);
     }

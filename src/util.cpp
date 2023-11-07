@@ -37,15 +37,16 @@ void Neighbours::find_neighbours(int idx, Matrix &distances) {
     }
 
     entries[idx] = std::vector<int>();
-    int i = 0;
     for (const auto& [len, j] : ordered) {
-        if (i >= NEAREST) {
-            break;
+        if (j == idx) {
+            std::cerr << "debug" << std::endl;
+            throw;
         }
         entries[idx].push_back(j);
-        i++;
+        if (entries[idx].size() >= NEAREST) {
+            break;
+        }
     }
-
 }
 
 Neighbours::Neighbours(int n) : entries(n) {
@@ -65,7 +66,7 @@ int &Tour::operator[](int i) {
 length_t Tour::length(Matrix& distances) {
     length_t len = 0;
     for (int i = 0; i < distances.dim(); ++i) {
-        int j = (i + 1) % distances.dim();
+        int j = (i + 1) % n;
         len += distances.at(tour[i], tour[j]);
     }
     return len;
