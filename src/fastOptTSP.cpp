@@ -187,6 +187,11 @@ int main(int argc, char *argv[]) {
         Matrix distanceMatrix = createDistMatrixFromInput(cin);
     #endif
 
+        if (distanceMatrix.rows() == 1) {
+            std::cout << 0 << std::endl;
+            return 0;
+        }
+
     Matrix nbhd = createNearestNeighborMatrix(distanceMatrix, K_NEAREST);
     size_t n = distanceMatrix.rows();
 
