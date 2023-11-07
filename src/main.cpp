@@ -7,22 +7,12 @@
 #include "util.h"
 #include "lin_kernighan.h"
 
-#define RUNTIME 2500
-
-static inline std::chrono::time_point<std::chrono::high_resolution_clock> now() {
-    return std::chrono::high_resolution_clock::now();
-}
-
-static bool is_time_over(std::chrono::high_resolution_clock::time_point start_time, uint16_t ms_to_run) {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(now() - start_time).count() >= ms_to_run;
-}
-
 void greedy_tour(Matrix& distances, Tour& tour);
 
 int main() {
+    auto start = now();
     int n = 0;
     std::cin >> n;
-    auto start = now();
 
     std::vector<std::pair<num_t, num_t>> points;
     for (int i = 0; i < n; ++i) {
@@ -56,8 +46,8 @@ int main() {
 
     length_t prev = tour.length(distances);
     LK lk(tour, distances, neighbours);
-    while (!is_time_over(start, RUNTIME)) {
-        if (!lk.naive()) {
+    while (!is_time_over(start)) {
+        if (!lk.naive(start)) {
             break;
         }
     }

@@ -20,7 +20,7 @@ Tour &LK::get_tour() {
     return tour2;
 }
 
-bool LK::naive() {
+bool LK::naive(stopwatch_t& start) {
     int n = distances.dim();
     for (int i = 0; i < n; ++i) {
         X[i] = edge(0, 0);
@@ -42,7 +42,6 @@ bool LK::naive() {
     // choose t1
     int t1 = tour[t1_idx];
     int x1_idx = 0;
-    // TODO whenever we backtrack we have to reset to the last last
 
     Step3:
     // choose x1
@@ -96,6 +95,9 @@ bool LK::naive() {
     i++;
 
     Step6:
+    if (is_time_over(start)) {
+        return true;
+    }
     // xi = X[i - 1]
 
     if (i == 2) {

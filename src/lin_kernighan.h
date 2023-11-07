@@ -8,7 +8,7 @@ class LK {
 public:
     LK(Tour& base, Matrix &distances, Neighbours &neighbours);
     Tour& get_tour();
-    bool naive();
+    bool naive(stopwatch_t& stopwatch);
 
 
 private:

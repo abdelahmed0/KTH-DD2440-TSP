@@ -5,8 +5,12 @@
 #include <vector>
 #include <array>
 #include <set>
+#include <chrono>
 
-#define NEAREST 20
+#define RUNTIME 1500
+#define NEAREST 5
+
+typedef std::chrono::time_point<std::chrono::steady_clock> stopwatch_t;
 
 typedef double num_t;
 typedef uint32_t length_t;
@@ -15,6 +19,9 @@ typedef struct {
     int first;
     int second;
 } edge_t;
+
+stopwatch_t now();
+bool is_time_over(std::chrono::steady_clock::time_point start_time);
 
 bool operator<(const edge_t& lhs, const edge_t& rhs);
 bool operator==(const edge_t& lhs, const edge_t& rhs);

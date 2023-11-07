@@ -4,6 +4,14 @@
 #include <cassert>
 #include "util.h"
 
+stopwatch_t now() {
+    return std::chrono::steady_clock::now();
+}
+
+bool is_time_over(std::chrono::steady_clock::time_point start_time) {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(now() - start_time).count() >= RUNTIME;
+}
+
 bool operator<(const edge_t& lhs, const edge_t& rhs) {
     return lhs.first < rhs.first || (lhs.first == rhs.first && lhs.second < rhs.second);
 }
