@@ -13,7 +13,7 @@ using namespace std;
 
 static bool timeOver(chrono::steady_clock::time_point start_time, uint16_t ms_to_run) {
     return chrono::duration_cast<chrono::milliseconds>
-    (chrono::steady_clock::now() - start_time).count() >= ms_to_run;
+                   (chrono::steady_clock::now() - start_time).count() >= ms_to_run;
 }
 
 class Matrix {
@@ -35,7 +35,7 @@ inline Matrix createDistMatrixFromInput(istream& in) {
     size_t n;
     in >> n;
     Matrix distanceMatrix(n, n);
-    
+
     vector<double> x(n);
     vector<double> y(n);
     for (int line = 0; line < n; ++line) {
@@ -60,21 +60,21 @@ inline Matrix createNearestNeighborMatrix(Matrix& d, const size_t K_NEAREST) {
     size_t K = min(K_NEAREST, n);
     Matrix nbhd(n, K);
     vector<uint32_t> nbhdRow(n-1);
-        
+
     for (size_t i = 0; i < n; ++i) {
         iota(nbhdRow.begin(), nbhdRow.begin() + i, 0);
         iota(nbhdRow.begin() + i, nbhdRow.end(), i+1);
 
         stable_sort(nbhdRow.begin(), nbhdRow.end(),
-            [&](uint32_t j, uint32_t k) {
-                return d.at(i, j) < d.at(i, k);
-            }
+                    [&](uint32_t j, uint32_t k) {
+                        return d.at(i, j) < d.at(i, k);
+                    }
         );
         for (size_t k = 0; k < K; ++k) {
             nbhd.at(i, k) = nbhdRow[k];
         }
     }
-    
+
     return nbhd;
 }
 
@@ -131,8 +131,8 @@ inline vector<uint32_t> greedy(Matrix& m) {
  * "Large-Step Markov Chains for the Traveling Salesman Problem"
  * Time complexity: O(n)
  */
-inline void fastTwoOpt(Matrix& d, Matrix& nbhd, 
-                       vector<uint32_t>& tour, vector<uint32_t> whichSlot, 
+inline void fastTwoOpt(Matrix& d, Matrix& nbhd,
+                       vector<uint32_t>& tour, vector<uint32_t>& whichSlot,
                        uint32_t minLink, uint32_t& maxLink,
                        chrono::steady_clock::time_point startTime, uint16_t timeLimit) {
     size_t N = d.rows();
@@ -148,7 +148,7 @@ inline void fastTwoOpt(Matrix& d, Matrix& nbhd,
             size_t n1_i = (m1_i + 1) % N;
             uint32_t m1 = tour[m1_i];
             uint32_t n1 = tour[n1_i];
-            
+
             // for each (m2, n2) where m2 is choosen as the k-closest neighbor of m1
             for (size_t k = 0; k < nbhd.cols(); ++k) {
                 uint32_t m2_i = whichSlot[nbhd.at(m1, k)];
@@ -175,22 +175,22 @@ inline void fastTwoOpt(Matrix& d, Matrix& nbhd,
 
 int main(int argc, char *argv[]) {
     chrono::steady_clock::time_point startTime = chrono::steady_clock::now();
-    const uint16_t timeLimit = 1900;
-    const uint16_t twoOptTimeLimit = 200;
-    const size_t K_NEAREST = 30;
+    const uint16_t timeLimit = 1950;
+    const uint16_t twoOptTimeLimit = 1950;
+    const size_t K_NEAREST = 140;
 
-    #if TESTING
-        fstream testFile;
+#if TESTING
+    fstream testFile;
         testFile.open(argv[1], ios::in);
         Matrix distanceMatrix = createDistMatrixFromInput(testFile);
-    #else
-        Matrix distanceMatrix = createDistMatrixFromInput(cin);
-    #endif
+#else
+    Matrix distanceMatrix = createDistMatrixFromInput(cin);
+#endif
 
-        if (distanceMatrix.rows() == 1) {
-            std::cout << 0 << std::endl;
-            return 0;
-        }
+    if (distanceMatrix.rows() == 1) {
+        std::cout << 0 << std::endl;
+        return 0;
+    }
 
     Matrix nbhd = createNearestNeighborMatrix(distanceMatrix, K_NEAREST);
     size_t n = distanceMatrix.rows();
@@ -211,9 +211,9 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < tour.size(); ++i) {
         cout << tour[i] << endl;
     }
-    #if TESTING
-        cout << "Tourlength: " << tourLength(tour, distanceMatrix) << endl;
-    #endif
+#if TESTING
+    cout << "Tourlength: " << tourLength(tour, distanceMatrix) << endl;
+#endif
 
     return 0;
 }
