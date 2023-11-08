@@ -11,9 +11,9 @@ using namespace std;
 
 #define TESTING 0
 
-static bool timeOver(chrono::steady_clock::time_point start_time, uint16_t ms_to_run) {
+static bool timeOver(chrono::steady_clock::time_point start_time, uint32_t ms_to_run) {
     return chrono::duration_cast<chrono::milliseconds>
-                   (chrono::steady_clock::now() - start_time).count() >= ms_to_run;
+    (chrono::steady_clock::now() - start_time).count() >= ms_to_run;
 }
 
 class Matrix {
@@ -35,7 +35,7 @@ inline Matrix createDistMatrixFromInput(istream& in) {
     size_t n;
     in >> n;
     Matrix distanceMatrix(n, n);
-
+    
     vector<double> x(n);
     vector<double> y(n);
     for (int line = 0; line < n; ++line) {
@@ -60,27 +60,24 @@ inline Matrix createNearestNeighborMatrix(Matrix& d, const size_t K_NEAREST) {
     size_t K = min(K_NEAREST, n);
     Matrix nbhd(n, K);
     vector<uint32_t> nbhdRow(n-1);
-
+        
     for (size_t i = 0; i < n; ++i) {
         iota(nbhdRow.begin(), nbhdRow.begin() + i, 0);
         iota(nbhdRow.begin() + i, nbhdRow.end(), i+1);
 
         stable_sort(nbhdRow.begin(), nbhdRow.end(),
-                    [&](uint32_t j, uint32_t k) {
-                        return d.at(i, j) < d.at(i, k);
-                    }
+            [&](uint32_t j, uint32_t k) {
+                return d.at(i, j) < d.at(i, k);
+            }
         );
         for (size_t k = 0; k < K; ++k) {
             nbhd.at(i, k) = nbhdRow[k];
         }
     }
-
+    
     return nbhd;
 }
 
-/**
- * Requires start to be smaller than end
- */
 inline void reverseTourSegment(vector<uint32_t>& tour, vector<uint32_t>& whichSlot, size_t start, size_t end) {
     while (start < end) {
         swap(tour[start], tour[end]);
@@ -129,7 +126,7 @@ inline vector<uint32_t> greedy(Matrix& m) {
 /**
  * Performs fast the 2-opt local optimization algorithm from the paper
  * "Large-Step Markov Chains for the Traveling Salesman Problem"
- * Time complexity: O(n)
+ * O(N) checkout time
  */
 inline void fastTwoOpt(Matrix& d, Matrix& nbhd,
                        vector<uint32_t>& tour, vector<uint32_t>& whichSlot,
@@ -161,7 +158,6 @@ inline void fastTwoOpt(Matrix& d, Matrix& nbhd,
                     break; // go to next m1
                 }
                 if (d.at(m1, m2) + d.at(n1, n2) < d.at(m1, n1) + d.at(m2, n2)) {
-                    // make swap
                     improved = true;
                     reverseTourSegment(tour, whichSlot, n1_i, m2_i);
                     maxLink = max(maxLink, max(d.at(m1, m2), d.at(n1, n2)));
@@ -193,6 +189,7 @@ inline void sortInTourOrder(vector<uint32_t>& cities, vector<size_t>& ind) {
 /**
  * Performs fast the 3-opt local optimization algorithm from the paper
  * "Large-Step Markov Chains for the Traveling Salesman Problem"
+ * O(N) checkout time
  */
 inline void fastThreeOpt(Matrix& d, Matrix& nbhd, 
                      vector<uint32_t>& tour, vector<uint32_t>& whichSlot, 
@@ -253,15 +250,10 @@ inline void fastThreeOpt(Matrix& d, Matrix& nbhd,
 
                     uint32_t oldDelta = d.at(C[0], C[1]) + d.at(C[2], C[3]) + d.at(C[4], C[5]);
 
-                    // Try the two topologically different moves
+                    // try the two topologically different moves
                     // which correspond to four different ordered cases 
-                    if (d.at(C[1], C[4]) + d.at(C[3], C[0]) + d.at(C[5], C[2]) < oldDelta) {
-                        newBestMove = true;
-                        reverseTourSegment(tour, whichSlot, I[0], I[5]);
-                        reverseTourSegment(tour, whichSlot, I[1], I[2]);
-                        reverseTourSegment(tour, whichSlot, I[3], I[4]);
-                        maxLink = max(maxLink, max(max(d.at(C[1], C[4]), d.at(C[3], C[0])), d.at(C[5], C[2])));
-                    } else if (d.at(C[3], C[0]) + d.at(C[5], C[1]) + d.at(C[2], C[4]) < oldDelta) {
+                    // cases that repeat cities degenerate to twoOpt cases
+                    if (d.at(C[3], C[0]) + d.at(C[5], C[1]) + d.at(C[2], C[4]) < oldDelta) {
                         newBestMove = true;
                         reverseTourSegment(tour, whichSlot, I[5], I[0]);
                         reverseTourSegment(tour, whichSlot, I[3], I[4]);
@@ -276,6 +268,12 @@ inline void fastThreeOpt(Matrix& d, Matrix& nbhd,
                         reverseTourSegment(tour, whichSlot, I[1], I[2]);
                         reverseTourSegment(tour, whichSlot, I[3], I[4]);
                         maxLink = max(maxLink, max(max(d.at(C[0], C[2]), d.at(C[1], C[4])), d.at(C[3], C[5])));
+                    } else if (d.at(C[1], C[4]) + d.at(C[3], C[0]) + d.at(C[5], C[2]) < oldDelta) {
+                        newBestMove = true;
+                        reverseTourSegment(tour, whichSlot, I[0], I[5]);
+                        reverseTourSegment(tour, whichSlot, I[1], I[2]);
+                        reverseTourSegment(tour, whichSlot, I[3], I[4]);
+                        maxLink = max(maxLink, max(max(d.at(C[1], C[4]), d.at(C[3], C[0])), d.at(C[5], C[2])));
                     }
 
                     if (newBestMove) {
@@ -291,17 +289,18 @@ inline void fastThreeOpt(Matrix& d, Matrix& nbhd,
     }
 }
 
-
 int main(int argc, char *argv[]) {
     chrono::steady_clock::time_point startTime = chrono::steady_clock::now();
-    const uint32_t timeLimit = 1900;
-    const uint32_t twoOptTimeLimit = 200;
-    const size_t K_NEAREST = 15;
+    const uint32_t timeLimit = 1920;
+    const uint32_t twoOptTimeLimit = 100;
+    // k=20 is a typical value according to "The Traveling Salesman Problem: A Case Study in Local Optimization"
+    // for random instances, k=15 seems to be optimal
+    const size_t K_NEAREST = 20;
 
 #if TESTING
     fstream testFile;
-        testFile.open(argv[1], ios::in);
-        Matrix distanceMatrix = createDistMatrixFromInput(testFile);
+    testFile.open(argv[1], ios::in);
+    Matrix distanceMatrix = createDistMatrixFromInput(testFile);
 #else
     Matrix distanceMatrix = createDistMatrixFromInput(cin);
 #endif
@@ -316,24 +315,42 @@ int main(int argc, char *argv[]) {
 
     vector<uint32_t> tour = greedy(distanceMatrix);
 
-    // Vector to keep track of where cities are in the current tour
-    // Used for fast-2-opt and fast-3-opt
-    vector<uint32_t> whichSlot(n);
-    for (uint32_t i = 0; i < n; ++i) {
-        whichSlot[tour[i]] = i;
-    }
-    const uint32_t minLink = distanceMatrix.min();
-    uint32_t maxLink = *max_element(begin(tour), end(tour));
-
-    fastTwoOpt(distanceMatrix, nbhd, tour, whichSlot, minLink, maxLink, startTime, twoOptTimeLimit);
-    fastThreeOpt(distanceMatrix, nbhd, tour, whichSlot, minLink, maxLink, startTime, timeLimit);
-
-    for (int i = 0; i < tour.size(); ++i) {
-        cout << tour[i] << endl;
-    }
 #if TESTING
-    cout << "Tourlength: " << tourLength(tour, distanceMatrix) << endl;
+    cout << "Greedy length: " << tourLength(tour, distanceMatrix) << endl;
 #endif
+
+    vector<uint32_t> bestTour = tour;
+    uint32_t bestCost = tourLength(tour, distanceMatrix);
+
+    // while (!timeOver(startTime, timeLimit)){
+        // Vector to keep track of where cities are in the current tour
+        // Used for fast-2-opt and fast-3-opt
+        vector<uint32_t> whichSlot(n);
+        for (uint32_t i = 0; i < n; ++i) {
+            whichSlot[tour[i]] = i;
+        }
+        const uint32_t minLink = distanceMatrix.min();
+        uint32_t maxLink = *max_element(begin(tour), end(tour));
+
+        fastTwoOpt(distanceMatrix, nbhd, tour, whichSlot, minLink, maxLink, startTime, twoOptTimeLimit);
+        fastThreeOpt(distanceMatrix, nbhd, tour, whichSlot, minLink, maxLink, startTime, timeLimit);
+
+    //     uint32_t length = tourLength(tour, distanceMatrix);
+    //     if (length < bestCost) {
+    //         bestCost = length;
+    //         bestTour = tour;
+    //     }
+    //     // TODO: some random perturbation of the tour
+    // }
+
+
+#if TESTING
+    cout << "Tourlength:    " << bestCost;
+#else
+    for (int i = 0; i < bestTour.size(); ++i) {
+        cout << bestTour[i] << endl;
+    }
+#endif    
 
     return 0;
 }
