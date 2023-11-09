@@ -11,28 +11,28 @@ using namespace std;
 
 #define TESTING 0
 
-static bool timeOver(chrono::steady_clock::time_point start_time, uint32_t ms_to_run) {
+static bool timeOver(chrono::steady_clock::time_point start_time, uint16_t ms_to_run) {
     return chrono::duration_cast<chrono::milliseconds>
     (chrono::steady_clock::now() - start_time).count() >= ms_to_run;
 }
 
 class Matrix {
 public:
-    Matrix(size_t N, size_t M) : n(N), m(M), data(N * M) {}
-    inline size_t rows() { return n; }
-    inline size_t cols() { return m; }
-    uint32_t& at(size_t i, size_t j) { return data[i * m + j]; }
-    vector<uint32_t>::iterator rowIterator(size_t i) { return data.begin() + i * m; }
+    Matrix(uint16_t N, uint16_t M) : n(N), m(M), data(N * M) {}
+    inline uint16_t rows() { return n; }
+    inline uint16_t cols() { return m; }
+    uint32_t& at(uint16_t i, uint16_t j) { return data[i * m + j]; }
+    vector<uint32_t>::iterator rowIterator(uint16_t i) { return data.begin() + i * m; }
     uint32_t min() {return *min_element(begin(data), end(data));}
 
 private:
-    size_t n;
-    size_t m;
+    uint16_t n;
+    uint16_t m;
     vector<uint32_t> data;
 };
 
 inline Matrix createDistMatrixFromInput(istream& in) {
-    size_t n;
+    uint16_t n;
     in >> n;
     Matrix distanceMatrix(n, n);
     
@@ -42,8 +42,8 @@ inline Matrix createDistMatrixFromInput(istream& in) {
         in >> x[line] >> y[line];
     }
 
-    for (size_t r = 0; r < n; ++r) {
-        for (size_t c = 0; c < n; ++c) {
+    for (uint16_t r = 0; r < n; ++r) {
+        for (uint16_t c = 0; c < n; ++c) {
             distanceMatrix.at(r, c) = round(sqrt(pow(x[r] - x[c], 2) + pow(y[r] - y[c], 2)));
         }
     }
@@ -55,13 +55,13 @@ inline Matrix createDistMatrixFromInput(istream& in) {
  * Calculate K-nearest neighbor matrix
  * For nbhd[i][j] = k , city k i s the jth closest city to city i
  */
-inline Matrix createNearestNeighborMatrix(Matrix& d, const size_t K_NEAREST) {
-    size_t n = d.rows();
-    size_t K = min(K_NEAREST, n);
+inline Matrix createNearestNeighborMatrix(Matrix& d, const uint16_t K_NEAREST) {
+    uint16_t n = d.rows();
+    uint16_t K = min(K_NEAREST, n);
     Matrix nbhd(n, K);
     vector<uint32_t> nbhdRow(n-1);
         
-    for (size_t i = 0; i < n; ++i) {
+    for (uint16_t i = 0; i < n; ++i) {
         iota(nbhdRow.begin(), nbhdRow.begin() + i, 0);
         iota(nbhdRow.begin() + i, nbhdRow.end(), i+1);
 
@@ -70,7 +70,7 @@ inline Matrix createNearestNeighborMatrix(Matrix& d, const size_t K_NEAREST) {
                 return d.at(i, j) < d.at(i, k);
             }
         );
-        for (size_t k = 0; k < K; ++k) {
+        for (uint16_t k = 0; k < K; ++k) {
             nbhd.at(i, k) = nbhdRow[k];
         }
     }
@@ -78,7 +78,15 @@ inline Matrix createNearestNeighborMatrix(Matrix& d, const size_t K_NEAREST) {
     return nbhd;
 }
 
-inline void reverseTourSegment(vector<uint32_t>& tour, vector<uint32_t>& whichSlot, size_t start, size_t end) {
+inline void reverseTourSegment(vector<uint32_t>& tour, uint16_t start, uint16_t end) {
+    while (start < end) {
+        swap(tour[start], tour[end]);
+        start++;
+        end--;
+    }
+}
+
+inline void reverseTourSegment(vector<uint32_t>& tour, vector<uint16_t>& whichSlot, uint16_t start, uint16_t end) {
     while (start < end) {
         swap(tour[start], tour[end]);
         whichSlot[tour[start]] = start;
@@ -88,10 +96,10 @@ inline void reverseTourSegment(vector<uint32_t>& tour, vector<uint32_t>& whichSl
     }
 }
 
-inline uint32_t tourLength(vector<uint32_t>& tour, Matrix dist) { // TODO: check if whichSlot is needed
+inline uint32_t tourLength(vector<uint32_t>& tour, Matrix dist) { 
     uint32_t length = 0;
-    size_t n = tour.size();
-    for (size_t i = 0; i < n; ++i) {
+    uint16_t n = tour.size();
+    for (uint16_t i = 0; i < n; ++i) {
         length += dist.at(tour[i], tour[(i+1) % n]);
     }
     return length;
@@ -129,10 +137,10 @@ inline vector<uint32_t> greedy(Matrix& m) {
  * O(N) checkout time
  */
 inline void fastTwoOpt(Matrix& d, Matrix& nbhd,
-                       vector<uint32_t>& tour, vector<uint32_t>& whichSlot,
+                       vector<uint32_t>& tour, vector<uint16_t>& whichSlot,
                        uint32_t minLink, uint32_t& maxLink,
                        chrono::steady_clock::time_point startTime, uint32_t timeLimit) {
-    size_t N = d.rows();
+    uint16_t N = d.rows();
     bool improved = true;
 
     while (improved) {
@@ -141,22 +149,23 @@ inline void fastTwoOpt(Matrix& d, Matrix& nbhd,
         improved = false;
         // We want to consider swaps of edges (m1, n1) and (m2, n2) which are currently in tour
         // for each (m1, n1)
-        for (size_t m1_i = 0; m1_i < N; ++m1_i) {
-            size_t n1_i = (m1_i + 1) % N;
-            uint32_t m1 = tour[m1_i];
+        for (uint16_t n1_i = 0; n1_i < N; ++n1_i) {
+            uint16_t m1_i = (n1_i - 1 + N) % N;
             uint32_t n1 = tour[n1_i];
+            uint32_t m1 = tour[m1_i];
 
             // for each (m2, n2) where m2 is choosen as the k-closest neighbor of m1
-            for (size_t k = 0; k < nbhd.cols(); ++k) {
-                uint32_t m2_i = whichSlot[nbhd.at(m1, k)];
-                size_t n2_i = (m2_i + 1) % N;
-                uint32_t m2 = tour[m2_i];
+            for (uint16_t k = 0; k < nbhd.cols(); ++k) {
+                uint32_t n2_i = whichSlot[nbhd.at(n1, k)];
+                uint16_t m2_i = (n2_i - 1 + N) % N;
                 uint32_t n2 = tour[n2_i];
+                uint32_t m2 = tour[m2_i];
 
                 // if lower bound on new length is greater than upper bound of old length
-                if (d.at(m1, m2) + minLink > d.at(m1, n1) + maxLink) {
+                if (d.at(n1, n2) + minLink > d.at(m1, n1) + maxLink) {
                     break; // go to next m1
                 }
+                // try the move
                 if (d.at(m1, m2) + d.at(n1, n2) < d.at(m1, n1) + d.at(m2, n2)) {
                     improved = true;
                     reverseTourSegment(tour, whichSlot, n1_i, m2_i);
@@ -171,7 +180,7 @@ inline void fastTwoOpt(Matrix& d, Matrix& nbhd,
 /**
  * Sorts three edges according to their position in the tour, given by the indices
  */
-inline void sortInTourOrder(vector<uint32_t>& cities, vector<size_t>& ind) {
+inline void sortInTourOrder(vector<uint32_t>& cities, vector<uint16_t>& ind) {
     if (ind[0] < ind[4] && ind[0] > ind[2] 
         || ind[0] > ind[2] && ind[2] > ind[4]
         || ind[0] < ind[4] && ind[2] > ind[4]) {
@@ -179,7 +188,7 @@ inline void sortInTourOrder(vector<uint32_t>& cities, vector<size_t>& ind) {
             cities[0] = tmp_c[2]; cities[1] = tmp_c[3];
             cities[2] = tmp_c[0]; cities[3] = tmp_c[1];
             // cities[4] and cities[5] do not change
-            vector<size_t> tmp_i = ind;
+            vector<uint16_t> tmp_i = ind;
             ind[0] = tmp_i[2]; ind[1] = tmp_i[3];
             ind[2] = tmp_i[0]; ind[3] = tmp_i[1];
             // and their indices neither
@@ -192,28 +201,29 @@ inline void sortInTourOrder(vector<uint32_t>& cities, vector<size_t>& ind) {
  * O(N) checkout time
  */
 inline void fastThreeOpt(Matrix& d, Matrix& nbhd, 
-                     vector<uint32_t>& tour, vector<uint32_t>& whichSlot, 
+                     vector<uint32_t>& tour, vector<uint16_t>& whichSlot, 
                      uint32_t minLink, uint32_t& maxLink, 
                      chrono::steady_clock::time_point startTime, uint32_t timeLimit) {
-    const size_t N = d.rows();
+    const uint16_t N = d.rows();
 
     bool improved = true;
     while (improved) {
         improved = false;
 
-        if (timeOver(startTime, timeLimit))
-            return; 
-
         // for each edge (m1, n1)
-        for (size_t n1_i = 0; n1_i < N; ++n1_i) {
-            size_t m1_i = (n1_i - 1 + N) % N;
+        for (uint16_t n1_i = 0; n1_i < N; ++n1_i) {
+            uint16_t m1_i = (n1_i - 1 + N) % N;
             uint32_t m1 = tour[m1_i];
             uint32_t n1 = tour[n1_i];
 
+            // moved here from outer loop because of timelimit issues for k > 40
+            if (timeOver(startTime, timeLimit))
+                return; 
+
             // for each edge (m2, n2) where n2 is choosen as the  k-nearest neighbor of m1
-            for (size_t k1 = 0; k1 < nbhd.cols(); ++k1) {
-                uint32_t n2_i = whichSlot[nbhd.at(m1, k1)];
-                size_t m2_i = (n2_i + N - 1) % N; 
+            for (uint16_t k1 = 0; k1 < nbhd.cols(); ++k1) {
+                uint16_t n2_i = whichSlot[nbhd.at(m1, k1)];
+                uint16_t m2_i = (n2_i + N - 1) % N; 
                 uint32_t m2 = tour[m2_i];
                 uint32_t n2 = tour[n2_i];
 
@@ -228,9 +238,9 @@ inline void fastThreeOpt(Matrix& d, Matrix& nbhd,
                     continue; // next (m2, n2) edge
 
                 // for each (m3, n3) where n3 is chosen as the k-closest neighbor of m2
-                for (size_t k2 = 0; k2 < nbhd.cols(); ++k2) {
-                    uint32_t n3_i = whichSlot[nbhd.at(m1, k2)];
-                    size_t m3_i = (n3_i + N - 1) % N;
+                for (uint16_t k2 = 0; k2 < nbhd.cols(); ++k2) {
+                    uint16_t n3_i = whichSlot[nbhd.at(m1, k2)];
+                    uint16_t m3_i = (n3_i + N - 1) % N;
                     uint32_t m3 = tour[m3_i];
                     uint32_t n3 = tour[n3_i];
 
@@ -245,7 +255,7 @@ inline void fastThreeOpt(Matrix& d, Matrix& nbhd,
                     // sort cities according to their occurence in the tour
                     // and keep track of their indices for tour segment reversal
                     vector<uint32_t> C = {m1, n1, m2, n2, m3, n3};
-                    vector<size_t> I = {m1_i, n1_i, m2_i, n2_i, m3_i, n3_i};
+                    vector<uint16_t> I = {m1_i, n1_i, m2_i, n2_i, m3_i, n3_i};
                     sortInTourOrder(C, I);
 
                     uint32_t oldDelta = d.at(C[0], C[1]) + d.at(C[2], C[3]) + d.at(C[4], C[5]);
@@ -289,13 +299,22 @@ inline void fastThreeOpt(Matrix& d, Matrix& nbhd,
     }
 }
 
+inline void setBestTour(Matrix& distanceMatrix, vector<uint32_t>& bestTour, uint32_t& bestCost, vector<uint32_t>& newTour) {
+    uint32_t length = tourLength(newTour, distanceMatrix);
+    if (length < bestCost) {
+        bestCost = length;
+        bestTour = newTour;
+    }
+}
+
 int main(int argc, char *argv[]) {
-    chrono::steady_clock::time_point startTime = chrono::steady_clock::now();
-    const uint32_t timeLimit = 1920;
-    const uint32_t twoOptTimeLimit = 100;
+    auto startTime = chrono::steady_clock::now();
+    const uint16_t timePerTwoOpt = 300;
+    const uint16_t timeLimit = 1990;
+    
     // k=20 is a typical value according to "The Traveling Salesman Problem: A Case Study in Local Optimization"
     // for random instances, k=15 seems to be optimal
-    const size_t K_NEAREST = 20;
+    const uint16_t K_NEAREST = 85;
 
 #if TESTING
     fstream testFile;
@@ -311,7 +330,7 @@ int main(int argc, char *argv[]) {
     }
 
     Matrix nbhd = createNearestNeighborMatrix(distanceMatrix, K_NEAREST);
-    size_t n = distanceMatrix.rows();
+    uint16_t n = distanceMatrix.rows();
 
     vector<uint32_t> tour = greedy(distanceMatrix);
 
@@ -323,24 +342,22 @@ int main(int argc, char *argv[]) {
     uint32_t bestCost = tourLength(tour, distanceMatrix);
 
     // while (!timeOver(startTime, timeLimit)){
+    //     auto iterationStartTime = chrono::steady_clock::now();
         // Vector to keep track of where cities are in the current tour
         // Used for fast-2-opt and fast-3-opt
-        vector<uint32_t> whichSlot(n);
-        for (uint32_t i = 0; i < n; ++i) {
+        vector<uint16_t> whichSlot(n);
+        for (uint16_t i = 0; i < n; ++i) {
             whichSlot[tour[i]] = i;
         }
         const uint32_t minLink = distanceMatrix.min();
         uint32_t maxLink = *max_element(begin(tour), end(tour));
 
-        fastTwoOpt(distanceMatrix, nbhd, tour, whichSlot, minLink, maxLink, startTime, twoOptTimeLimit);
-        fastThreeOpt(distanceMatrix, nbhd, tour, whichSlot, minLink, maxLink, startTime, timeLimit);
+        fastTwoOpt(distanceMatrix, nbhd, tour, whichSlot, minLink, maxLink, startTime, timePerTwoOpt);
+        setBestTour(distanceMatrix, bestTour, bestCost, tour);
 
-    //     uint32_t length = tourLength(tour, distanceMatrix);
-    //     if (length < bestCost) {
-    //         bestCost = length;
-    //         bestTour = tour;
-    //     }
-    //     // TODO: some random perturbation of the tour
+        fastThreeOpt(distanceMatrix, nbhd, tour, whichSlot, minLink, maxLink, startTime, timeLimit);
+        setBestTour(distanceMatrix, bestTour, bestCost, tour);
+        // // TODO: some random perturbation of the tour
     // }
 
 
