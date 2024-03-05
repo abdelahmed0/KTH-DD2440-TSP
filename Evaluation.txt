@@ -1,0 +1,47 @@
+
+
+2opt
+
+Fail 2opt+3opt
+
+Really inefficient: markov chain algorithm
+
+fast2opt
+
+Fail: fast3opt
+
+Success: fast2opt + large step markov chain
+
+
+
+Evaluation
+
+--------------------------------------------
+    fast2 + random4 + markov chain magic
+--------------------------------------------
+t  points max_limit
+1  35.90  1998
+2  41.69  1998
+3  41.69  1999
+5  41.81  1999
+
+
+
+
+------------------------------
+    fast2 + fast3 + random4
+------------------------------
+k  t1  t2  points
+-----------------
+15 10  30  34.74
+15 30  70  34.70
+15 50  70  34.70
+15 50  100 34.50
+
+20 10  20  35.49
+20 10  30  35.69
+
+15 10  30  34.74
+20 10  30  36.17 <-------- Best parameters (but also most tries)
+22 10  30  timeLimit
+30 10  30  34.17
