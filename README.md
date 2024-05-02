@@ -2,7 +2,14 @@
 
 Solution to the Traveling Salesperson 2D problem on Kattis, as part of the course DD2440 Advanced Algorithms at KTH.
 
-See below for the full problem statement.
+The solution consists of iterated fast-2Opt moves combined with randomized tour perturbations.
+
+### Fast-2Opt
+Implementated as described in the paper "Large-Step Markov Chains for the Traveling Salesman Problem".
+
+### Tour perturbations
+To combat convergence to bad local optima, we use Large-step markov-chain tour perturbations.
+They are effectively randomized 4-opt bridge moves as explained in the paper "An Effective Implementation of K-opt Moves for the Lin-Kernighan TSP Heuristic".
 
 ## Problem Statement
 
