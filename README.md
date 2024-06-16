@@ -5,7 +5,7 @@ Solution to the Traveling Salesperson 2D problem on Kattis, as part of the cours
 The solution consists of iterated fast-2Opt moves combined with randomized tour perturbations.
 
 ### Fast-2Opt
-Implementated as described in the paper "Large-Step Markov Chains for the Traveling Salesman Problem".
+Implemented as described in the paper "Large-Step Markov Chains for the Traveling Salesman Problem".
 
 ### Tour perturbations
 To combat convergence to bad local optima, we use Large-step markov-chain tour perturbations.
